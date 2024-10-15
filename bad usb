@@ -1,0 +1,39 @@
+#include "bsp/board.h"
+#include "tusb.h"
+
+// Código de inicialização USB
+void usb_init(void) {
+    board_init();
+    tusb_init();
+}
+
+// Função que simula o envio de teclas
+void send_keystrokes(const uint8_t *keystrokes, size_t length) {
+    for (size_t i = 0; i < length; ++i) {
+        // Relacionar a tecla ao código de HID correspondente
+        uint8_t keycode[6] = { keystrokes[i], 0, 0, 0, 0, 0 };
+        tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, keycode);
+        
+        // Espera para permitir que o sistema detecte a tecla
+        board_delay(10);
+
+        // Solta a tecla
+        tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, NULL);
+        board_delay(10);
+    }
+}
+
+int main(void) {
+    usb_init();
+
+    while (1) {
+        // Código a ser enviado
+        uint8_t payload[] = { HID_KEY_A, HID_KEY_B, HID_KEY_ENTER }; // Substitua pelos códigos que desejar
+        send_keystrokes(payload, sizeof(payload));
+
+        // Pausa para evitar execução contínua
+        board_delay(5000);
+    }
+
+    return 0;
+}
